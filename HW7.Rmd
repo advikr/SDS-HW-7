@@ -24,6 +24,7 @@ library(ggplot2)
 library(tidyverse)
 library(tibble)
 library(dplyr)
+library(mosaic)
 library(MatchIt)
 ```
 
@@ -129,42 +130,15 @@ The confidence intervals would be different across all samples because you are r
 
 ```{r echo = FALSE, warning = FALSE}
 votes <- read.csv("turnout.csv")
-# prop who voted and received 
-voters <- votes %>%
-  nrow()
-voted_called <- votes %>%
-  filter(voted1998 == 1, GOTV_call == 1) %>%
-  nrow()
-voted_called
-prop <- voted_called / voters
-prop
-# 0.01477514
-voted_not_called <- votes %>%
-  filter(voted1998 == 1, GOTV_call == 0) %>%
-  nrow()
-voted_not_called
-received_call <- votes %>%
-  filter(GOTV_call == 1) %>%
-  nrow()
-# 247
-no_call <- votes %>%
-  filter(GOTV_call == 0) %>%
-  nrow()
-# 10582
-prop1 <- voted_not_called / voters
-prop1
-# 0.4341121
-recurrences1 = c(160, 4701)
-sample_size1 = c(247, 10582)
-prop.test(recurrences1, sample_size1)
-#  0.1411399 0.2659167
+prop(voted1998 ~ GOTV_call, data = votes)
+prop.test(voted1998 ~ GOTV_call, data = votes, success = 1)
 ```
 
 The proportion of those receiving a GOTV call who voted in 1998 was 0.648.
 
 The proportion of those not receiving a GOTV call who voted in 1998 was 0.444.
 
-The large-sample 95% confidence interval for the difference in these two proportions was (0.141, 0.266).
+The large-sample 95% confidence interval for the difference in these two proportions was (-0.266, -0.141).
 
 ### Part B
 
@@ -255,3 +229,7 @@ prop.test(votes_count_matched, total_matched)
 ```
 
 The proportion of those receiving a GOTV call who voted in 1998 was 0.648. The sample proportion of those not receiving a GOTV call who voted in 1998 0.569. The 95% confidence interval for the difference in these two proportions was (0.010, 0.147).
+
+**Conclusion:**
+
+Since the confidence interval doesn't include 0, it means that the GOTV call impacts the likelihood of someone voting in 1998.
