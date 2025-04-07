@@ -183,7 +183,7 @@ gotv_call_majorpty_table <- table(votes$GOTV_call, votes$MAJORPTY)
 prop.test(gotv_call_majorpty_table)
 
 voted1998_majorpty_table <- table(votes$voted1998, votes$MAJORPTY)
-prop.test(gotv_call_majorpty_table)
+prop.test(voted1998_majorpty_table)
 ```
 
 The MAJORPTY variable is a confounding variable on the casual effect of GOTV calls impacting the likelihood of a person voting in 1998. This is proven by the prop test 95% confidence intervals as they both do not contain 0, which means that being registered to one of two major political parties increases your chance of getting a GOTV call, and voting in 1998.
