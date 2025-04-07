@@ -1,0 +1,257 @@
+---
+title: "Homework 7"
+author: "Advik Ravichandran"
+date: "April 7th, 2025"
+output:
+  pdf_document:
+    toc: false
+    toc_depth: '3'
+  html_document:
+    toc: false
+    toc_float: false
+    toc_depth: 3
+    number_sections: false
+    theme: journal
+---
+
+**UTEID:** asr3897
+
+**GitHub Link:** <https://github.com/advikr/SDS-HW-7>
+
+```{r echo = FALSE, warning = FALSE, results = 'hide', message = FALSE}
+# Loading necessary libraries
+library(ggplot2)
+library(tidyverse)
+library(tibble)
+library(dplyr)
+library(MatchIt)
+```
+
+# Problem 1: Armfolding
+
+### Part A
+
+```{r echo = FALSE, warning = FALSE}
+# Loading dataset and reporting values
+armfold <- read.csv("armfold.csv")
+# Number of male and female students in dataset
+student_genders <- armfold %>%
+  group_by(Sex) %>%
+  summarise(count = n())
+student_genders
+# 111 Females, 106 Males
+male_left_fold <- armfold %>%
+  filter(Sex == "Male", LonR_fold == 1) %>%
+  nrow()
+male_prop <- male_left_fold / 106
+male_prop
+
+female_left_fold <- armfold %>%
+  filter(Sex == "Female", LonR_fold == 1) %>%
+  nrow()
+female_prop <- female_left_fold / 111
+female_prop
+# 0.4716981
+# 0.4234234
+```
+
+The number of males and females in the dataset are 106 and 111, respectively. The sample proportions of males and females who folded their left arm on top is 0.472 and 0.423, respectively.
+
+### Part B
+
+```{r echo = FALSE, warning = FALSE}
+diff_prop <- male_prop - female_prop
+# 0.04827469
+```
+
+The observed difference in proportions is 0.048 between the two groups, calculated by the proportions of males folding their left arm on top minus the proportions of females folding their left arm on top.
+
+### Part C
+
+```{r echo = FALSE, warning = FALSE}
+recurrences = c(50, 47)
+sample_size = c(106, 111)
+prop.test(recurrences, sample_size, correct = FALSE)
+# 95 percent confidence interval:
+#  -0.08393731  0.18048668
+# Hand Calculated
+SE_diff <- sqrt((0.4716981 * (1 - 0.4716981) / 106) + (0.4234234 * (1 - 0.4234234) / 111))
+SE_diff
+conf_int_right <- (((50/106)) - (47/111)) + 1.96 * 0.06745634
+conf_int_left <- (((50/106)) - (47/111)) - 1.96 * 0.06745634
+conf_int_right
+conf_int_left
+# [1] 0.1804891
+# [1] -0.08393974
+```
+
+Standard Error for Difference in Proportions Equations:
+
+![](images/clipboard-1891417986.png)
+
+The following values were used to calculate the standard error:
+
+p1 = 0.4716981
+
+p2 = 0.4234234
+
+n1 = 106
+
+n2 = 111
+
+I used the Z\* value of 1.96 because that is derived from the 95% large-sample confidence interval of a normal distribution.
+
+### Part D
+
+If we were to repeat this study multiple times, 95% of the time, the true difference in proportions between males who fold their left hand on top and females who fold their left hand on top would be between the confidence interval (-0.08393731, 0.18048668).
+
+### Part E
+
+The standard error measures the variability between the two sample proportions, which in this case are males and females that fold their hands with their left hand on top, due to chance.
+
+### Part F
+
+The sampling distribution refers to the distribution of the difference in sample proportions if were to repeatedly sample the same population. In this case, it is referring to the difference in proportion of males and females that fold their hands with their left hand on top.
+
+### Part G
+
+The Central Limit Theorem supports this theory because it states that if a sample size is large enough, the distribution of the sample statistic will be approximately normal, regardless of the population distribution.
+
+### Part H
+
+Since the confidence interval contains 0, I think it is probable that there is no sex difference in arm folding.
+
+### Part I
+
+The confidence intervals would be different across all samples because you are randomly sampling from a population, thus the data will not be the same due to chance. However, the collection of all these intervals are that 95% of them will contain the sample statistic.
+
+# Problem 2
+
+```{r echo = FALSE, warning = FALSE}
+votes <- read.csv("turnout.csv")
+# prop who voted and received 
+voters <- votes %>%
+  nrow()
+voted_called <- votes %>%
+  filter(voted1998 == 1, GOTV_call == 1) %>%
+  nrow()
+voted_called
+prop <- voted_called / voters
+prop
+# 0.01477514
+voted_not_called <- votes %>%
+  filter(voted1998 == 1, GOTV_call == 0) %>%
+  nrow()
+voted_not_called
+received_call <- votes %>%
+  filter(GOTV_call == 1) %>%
+  nrow()
+# 247
+no_call <- votes %>%
+  filter(GOTV_call == 0) %>%
+  nrow()
+# 10582
+prop1 <- voted_not_called / voters
+prop1
+# 0.4341121
+recurrences1 = c(160, 4701)
+sample_size1 = c(247, 10582)
+prop.test(recurrences1, sample_size1)
+#  0.1411399 0.2659167
+```
+
+The proportion of those receiving a GOTV call who voted in 1998 was 0.648.
+
+The proportion of those not receiving a GOTV call who voted in 1998 was 0.444.
+
+The large-sample 95% confidence interval for the difference in these two proportions was (0.141, 0.266).
+
+### Part B
+
+```{r echo = FALSE, warning = FALSE}
+call_voted1996_table <- table(votes$GOTV_call, votes$voted1996)
+prop.test(call_voted1996_table)
+
+voted1996_voted1998 <- table(votes$voted1998, votes$voted1996)
+prop.test(voted1996_voted1998)
+```
+
+The voted1996 variable is a confounding variable because when calculating the 95% confidence intervals, they both do not include 0. This proves that voted1996 is a confounding variable because it increases the likelihood of both GOTV_call and voted1998.
+
+```{r echo = FALSE, warning = FALSE}
+gotv_call_majorpty_table <- table(votes$GOTV_call, votes$MAJORPTY)
+prop.test(gotv_call_majorpty_table)
+
+voted1998_majorpty_table <- table(votes$voted1998, votes$MAJORPTY)
+prop.test(gotv_call_majorpty_table)
+```
+
+The MAJORPTY variable is a confounding variable on the casual effect of GOTV calls impacting the likelihood of a person voting in 1998. This is proven by the prop test 95% confidence intervals as they both do not contain 0, which means that being registered to one of two major political parties increases your chance of getting a GOTV call, and voting in 1998.
+
+```{r echo = FALSE, warning = FALSE}
+# boxplot graph
+ggplot(votes, aes(x = factor(GOTV_call), y = AGE)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue") +
+  labs(
+    title = "Age Distribution by GOTV Calls",
+    x = "GOTV Call",
+    y = "Age"
+  ) +
+  scale_x_discrete(labels = c("No GOTV Call", "GOTV Call")) +
+  theme_minimal()
+# CI
+t.test(AGE ~ GOTV_call, data = votes)
+
+ggplot(votes, aes(x = factor(voted1998), y = AGE)) +
+  geom_boxplot(fill = "skyblue", color = "darkblue") +
+  labs(
+    title = "Age Distribution by Voting in 1998",
+    x = "Voted in 1998",
+    y = "Age"
+  ) +
+  scale_x_discrete(labels = c("No Vote", "Voted")) + 
+  theme_minimal()
+
+# CI
+t.test(AGE ~ voted1998, data = votes)
+```
+
+The AGE variable is a confounder on the casual effect of GOTV calls affecting the likelihood if a person voted in 1998 because it increased the likelihood of both variables. This is proven through the box plots, where the median age is significantly higher in both plots and also with the T test confidence intervals not including 0.
+
+### Part C
+
+```{r echo = FALSE, warning = FALSE}
+votes_matched = matchit(GOTV_call ~ AGE + voted1996 + MAJORPTY,
+                                 data = votes, ratio=5) %>%
+  match.data
+
+call_96_matched <- table(votes_matched$GOTV_call, votes_matched$voted1996)
+prop.test(call_96_matched)
+
+call_party_matched <- table(votes_matched$GOTV_call, votes_matched$MAJORPTY)
+prop.test(call_party_matched)
+
+# Matched CI for GOTV calls and mean ages
+t.test(AGE ~ GOTV_call, data = votes_matched)
+```
+
+All three confidence intervals include 0, which proves that this matched data set is balanced with respect to voted1996, AGE, and MAJORPTY.
+
+```{r echo = FALSE, warning = FALSE}
+call_matched <- sum(votes_matched$GOTV_call == 1)
+no_call_matched <- sum(votes_matched$GOTV_call == 0)
+
+vote1998_call_matched <- sum(votes_matched$voted1998 == 1 & votes_matched$GOTV_call == 1)
+vote1998_no_call_matched <- sum(votes_matched$voted1998 == 1 & votes_matched$GOTV_call == 0)
+
+proportion_1998_call_matched <- vote1998_call_matched / call_matched
+proportion_1998_no_call_matched <- vote1998_no_call_matched / no_call_matched
+
+votes_count_matched <- c(vote1998_call_matched, vote1998_no_call_matched)
+total_matched <- c(call_matched, no_call_matched)
+
+prop.test(votes_count_matched, total_matched)
+
+```
+
+The proportion of those receiving a GOTV call who voted in 1998 was 0.648. The sample proportion of those not receiving a GOTV call who voted in 1998 0.569. The 95% confidence interval for the difference in these two proportions was (0.010, 0.147).
